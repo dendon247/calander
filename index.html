@@ -3,16 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editable Multi-Entry Calendar</title>
+    <title>Multi-Theme Event Calendar</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="calendar-container">
+        <div id="monthBanner" class="month-banner"></div>
+
         <div class="calendar-header">
-            <button onclick="changeMonth(-1)">&#10094; Prev</button>
-            <h2 id="monthDisplay"></h2>
-            <button onclick="changeMonth(1)">Next &#10095;</button>
+            <div class="nav-controls">
+                <button onclick="changeMonth(-1)">&#10094;</button>
+                <h2 id="monthDisplay"></h2>
+                <button onclick="changeMonth(1)">&#10095;</button>
+            </div>
+            <div class="system-controls">
+                <select id="themePicker" onchange="updateTheme()">
+                    <option value="space">Space Theme</option>
+                    <option value="dogs">Dog Theme</option>
+                    <option value="nature">Nature Theme</option>
+                </select>
+                <button onclick="exportData()">Backup</button>
+                <button onclick="document.getElementById('fileInput').click()">Restore</button>
+                <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
+            </div>
         </div>
         
         <div class="weekdays">
@@ -25,25 +39,24 @@
     <div id="modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Entries for <span id="selectedDateText"></span></h3>
+                <h3><span id="selectedDateText"></span></h3>
                 <button class="close-x" onclick="closeModal()">&times;</button>
             </div>
             
-            <div id="entriesList" class="entries-list">
-                </div>
+            <div id="entriesList" class="entries-list"></div>
 
             <div class="entry-form">
                 <h4 id="formTitle">Add New Entry</h4>
-                <textarea id="entryInput" placeholder="What's on the schedule?"></textarea>
+                <textarea id="entryInput" placeholder="Write your plans here..."></textarea>
                 
                 <div class="settings-row">
                     <label>Label Color:</label>
-                    <input type="color" id="entryColor" value="#3182ce">
+                    <input type="color" id="entryColor" value="#38bdf8">
                 </div>
 
                 <div class="modal-buttons">
-                    <button id="saveBtn" onclick="saveEntry()" class="save-btn">Add to Day</button>
-                    <button id="cancelEditBtn" onclick="resetForm()" class="cancel-btn" style="display:none;">Cancel Edit</button>
+                    <button id="saveBtn" onclick="saveEntry()" class="save-btn">Save</button>
+                    <button id="cancelEditBtn" onclick="resetForm()" class="cancel-btn" style="display:none;">Cancel</button>
                     <button onclick="closeModal()" class="cancel-btn">Close</button>
                 </div>
             </div>

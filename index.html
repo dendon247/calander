@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Event Calendar</title>
+    <title>Editable Multi-Entry Calendar</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -24,43 +24,32 @@
 
     <div id="modal" class="modal">
         <div class="modal-content">
-            <h3>Entry for <span id="selectedDateText"></span></h3>
-            
-            <label for="entryInput">Note:</label>
-            <textarea id="entryInput" placeholder="What's happening?"></textarea>
-            
-            <div class="settings-row">
-                <label>Label Color:</label>
-                <input type="color" id="entryColor" value="#007bff">
+            <div class="modal-header">
+                <h3>Entries for <span id="selectedDateText"></span></h3>
+                <button class="close-x" onclick="closeModal()">&times;</button>
             </div>
+            
+            <div id="entriesList" class="entries-list">
+                </div>
 
-            <div class="modal-buttons">
-                <button onclick="saveEntry()" class="save-btn">Save Entry</button>
-                <button onclick="closeModal()" class="cancel-btn">Cancel</button>
+            <div class="entry-form">
+                <h4 id="formTitle">Add New Entry</h4>
+                <textarea id="entryInput" placeholder="What's on the schedule?"></textarea>
+                
+                <div class="settings-row">
+                    <label>Label Color:</label>
+                    <input type="color" id="entryColor" value="#3182ce">
+                </div>
+
+                <div class="modal-buttons">
+                    <button id="saveBtn" onclick="saveEntry()" class="save-btn">Add to Day</button>
+                    <button id="cancelEditBtn" onclick="resetForm()" class="cancel-btn" style="display:none;">Cancel Edit</button>
+                    <button onclick="closeModal()" class="cancel-btn">Close</button>
+                </div>
             </div>
         </div>
     </div>
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <h3>Entries for <span id="selectedDateText"></span></h3>
-            
-            <div id="entriesList"></div>
 
-            <hr>
-            <h4>Add New Entry</h4>
-            <textarea id="entryInput" placeholder="What's happening?"></textarea>
-            
-            <div class="settings-row">
-                <label>Color:</label>
-                <input type="color" id="entryColor" value="#007bff">
-            </div>
-
-            <div class="modal-buttons">
-                <button onclick="saveEntry()" class="save-btn">Add Entry</button>
-                <button onclick="closeModal()" class="cancel-btn">Close</button>
-            </div>
-        </div>
-    </div>
     <script src="script.js"></script>
 </body>
 </html>

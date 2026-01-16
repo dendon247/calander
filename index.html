@@ -3,61 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Theme Event Calendar</title>
+    <title>Fixed Entry Calendar</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="calendar-container">
+    <div class="calendar-app">
         <div id="monthBanner" class="month-banner"></div>
 
-        <div class="calendar-header">
-            <div class="nav-controls">
-                <button onclick="changeMonth(-1)">&#10094;</button>
-                <h2 id="monthDisplay"></h2>
-                <button onclick="changeMonth(1)">&#10095;</button>
-            </div>
-            <div class="system-controls">
-                <select id="themePicker" onchange="updateTheme()">
-                    <option value="space">Space Theme</option>
-                    <option value="dogs">Dog Theme</option>
-                    <option value="nature">Nature Theme</option>
-                </select>
-                <button onclick="exportData()">Backup</button>
-                <button onclick="document.getElementById('fileInput').click()">Restore</button>
-                <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
-            </div>
+        <div class="header">
+            <button onclick="changeMonth(-1)">&#10094;</button>
+            <h2 id="monthDisplay"></h2>
+            <button onclick="changeMonth(1)">&#10095;</button>
+            <select id="themePicker" onchange="updateTheme()">
+                <option value="space">Space</option>
+                <option value="dogs">Dogs</option>
+                <option value="nature">Nature</option>
+            </select>
         </div>
         
-        <div class="weekdays">
+        <div class="weekdays-bar">
             <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
         </div>
         
-        <div id="calendarGrid" class="days-grid"></div>
+        <div id="calendarGrid" class="main-grid"></div>
     </div>
 
-    <div id="modal" class="modal">
-        <div class="modal-content">
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-box">
             <div class="modal-header">
-                <h3><span id="selectedDateText"></span></h3>
-                <button class="close-x" onclick="closeModal()">&times;</button>
+                <h3 id="selectedDateText"></h3>
+                <button onclick="closeModal()">✕</button>
             </div>
-            
-            <div id="entriesList" class="entries-list"></div>
-
-            <div class="entry-form">
-                <h4 id="formTitle">Add New Entry</h4>
-                <textarea id="entryInput" placeholder="Write your plans here..."></textarea>
-                
-                <div class="settings-row">
-                    <label>Label Color:</label>
+            <div id="entriesList" class="entries-container"></div>
+            <div class="input-area">
+                <textarea id="entryInput" readonly placeholder="Tap keys below..."></textarea>
+                <div id="keyboard" class="kb-grid"></div>
+                <div class="footer-row">
                     <input type="color" id="entryColor" value="#38bdf8">
-                </div>
-
-                <div class="modal-buttons">
-                    <button id="saveBtn" onclick="saveEntry()" class="save-btn">Save</button>
-                    <button id="cancelEditBtn" onclick="resetForm()" class="cancel-btn" style="display:none;">Cancel</button>
-                    <button onclick="closeModal()" class="cancel-btn">Close</button>
+                    <button class="btn-save" onclick="saveEntry()">SAVE</button>
                 </div>
             </div>
         </div>

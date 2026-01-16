@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixed Entry Calendar</title>
+    <title>Universal Calendar 2026</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,14 +12,21 @@
         <div id="monthBanner" class="month-banner"></div>
 
         <div class="header">
-            <button onclick="changeMonth(-1)">&#10094;</button>
-            <h2 id="monthDisplay"></h2>
-            <button onclick="changeMonth(1)">&#10095;</button>
-            <select id="themePicker" onchange="updateTheme()">
-                <option value="space">Space</option>
-                <option value="dogs">Dogs</option>
-                <option value="nature">Nature</option>
-            </select>
+            <div class="nav">
+                <button onclick="changeMonth(-1)">&#10094;</button>
+                <h2 id="monthDisplay"></h2>
+                <button onclick="changeMonth(1)">&#10095;</button>
+            </div>
+            
+            <div class="system-actions">
+                <select id="themePicker" onchange="updateTheme()">
+                    <option value="space">Space</option>
+                    <option value="dogs">Dogs</option>
+                    <option value="nature">Nature</option>
+                </select>
+                <button onclick="exportData()">Backup</button>
+                <button onclick="document.getElementById('importFile').click()">Restore</button>
+            </div>
         </div>
         
         <div class="weekdays-bar">
@@ -33,19 +40,27 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3 id="selectedDateText"></h3>
-                <button onclick="closeModal()">✕</button>
+                <button onclick="closeModal()" class="close-btn">✕</button>
             </div>
+            
             <div id="entriesList" class="entries-container"></div>
+
             <div class="input-area">
-                <textarea id="entryInput" readonly placeholder="Tap keys below..."></textarea>
+                <textarea id="entryInput" readonly placeholder="Tap keys below to enter data..."></textarea>
                 <div id="keyboard" class="kb-grid"></div>
+                
                 <div class="footer-row">
-                    <input type="color" id="entryColor" value="#38bdf8">
-                    <button class="btn-save" onclick="saveEntry()">SAVE</button>
+                    <div class="color-picker-group">
+                        <label>Tag Color:</label>
+                        <input type="color" id="entryColor" value="#38bdf8">
+                    </div>
+                    <button class="btn-save" onclick="saveEntry()">SAVE ENTRY</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <input type="file" id="importFile" style="display:none" onchange="importData(event)">
 
     <script src="script.js"></script>
 </body>

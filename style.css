@@ -77,6 +77,20 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--dark); 
     background: var(--border); gap: 1px;
 }
 
+/* Day entries marquee at bottom of calendar */
+.day-marquee-wrap {
+    border-top: 1px solid rgba(255,255,255,0.04);
+    background: linear-gradient(180deg, rgba(0,0,0,0.02), transparent);
+    padding: 8px 12px; display: flex; align-items: center; overflow: hidden;
+}
+.marquee-viewport { width: 100%; overflow: hidden; position: relative; }
+.marquee-track { display: inline-block; white-space: nowrap; will-change: transform; }
+.marquee-item { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 16px; margin-right: 10px; background: rgba(255,255,255,0.03); color: var(--text); font-weight:700; }
+.marquee-item .tag-dot { width: 10px; height: 10px; border-radius: 50%; display:inline-block; flex: none; }
+.marquee-sep { width: 8px; height: 8px; background: #ff3b30; border-radius: 50%; display:inline-block; margin: 0 10px; vertical-align:middle; }
+
+.marquee-viewport:hover .marquee-track { /* optional visual pause hint */ }
+
 .day-cell { 
     background: var(--panel); min-height: 110px; padding: 10px; 
     cursor: pointer; display: flex; flex-direction: column; transition: 0.2s;

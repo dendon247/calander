@@ -95,14 +95,14 @@ function saveEntry() {
     if(!db[activeKey]) db[activeKey] = [];
     db[activeKey].push({ text: txt, color: document.getElementById('entryColor').value });
     localStorage.setItem('calendar_v5_db', JSON.stringify(db));
-    render(); updateEntries(); document.getElementById('entryInput').value = "";
+    render(); updateEntries(); updateMarquee(); document.getElementById('entryInput').value = "";
 }
 
 function delEntry(idx) {
     db[activeKey].splice(idx, 1);
     if(db[activeKey].length === 0) delete db[activeKey];
     localStorage.setItem('calendar_v5_db', JSON.stringify(db));
-    render(); updateEntries();
+    render(); updateEntries(); updateMarquee();
 }
 
 function updateTheme() {
@@ -126,10 +126,97 @@ function importData(e) {
     reader.onload = (event) => {
         db = JSON.parse(event.target.result);
         localStorage.setItem('calendar_v5_db', JSON.stringify(db));
-        render();
+        render(); updateMarquee();
     };
     reader.readAsText(e.target.files[0]);
 }
+
+/* Marquee: shows today's entries (or current day) at bottom of calendar
+   - items show tag-colored dot and text in tag color
+   - items separated by a small red dot
+   - continuous scroll with pause-on-hover
+*/
+let _marquee = { raf: null, offset: 0, speed: 0.5, paused: false };
+
+function buildMarqueeContent(items) {
+    // returns a single HTML string; we'll duplicate it for seamless scroll
+    if(!items || items.length === 0) return `<span class="marquee-item" style="opacity:0.8">No entries for today</span>`;
+    return items.map((ev) => {
+        const safeText = String(ev.text).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        const color = ev.color || '#888';
+        return `<span class="marquee-item"><span class="tag-dot" style="background:${color}"></span><span class="marq-text" style="color:${color}">${safeText}</span></span>`;
+    }).join('');
+}
+
+function updateMarquee() {
+    const track = document.getElementById('marqueeTrack');
+    if(!track) return;
+    const now = new Date();
+    const key = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+    const items = db[key] ? db[key].slice() : [];
+    const content = buildMarqueeContent(items);
+    // populate track with duplicated content for seamless loop
+    track.innerHTML = '';
+    const viewport = document.querySelector('.marquee-viewport');
+    const a = document.createElement('div'); a.className = 'marquee-segment'; a.style.display = 'inline-block'; a.innerHTML = content;
+    // if content is shorter than viewport, repeat it inside the segment until it's longer
+    if(viewport) {
+        // append repeatedly but limit iterations to avoid runaway
+        let iter = 0;
+        track.appendChild(a);
+        // force layout
+        let segWidth = a.offsetWidth;
+        while(viewport && segWidth <= viewport.offsetWidth && iter < 8) {
+            a.innerHTML += content;
+            // force reflow to update width
+            segWidth = a.offsetWidth;
+            iter++;
+        }
+        // create second segment for seamless loop
+        const b = a.cloneNode(true);
+        track.appendChild(b);
+    } else {
+        const b = a.cloneNode(true);
+        track.appendChild(a);
+        track.appendChild(b);
+    }
+    // reset offset
+    _marquee.offset = 0;
+    // start loop
+    startMarqueeLoop();
+}
+
+function startMarqueeLoop() {
+    const track = document.getElementById('marqueeTrack');
+    const viewport = document.querySelector('.marquee-viewport');
+    if(!track || !viewport) return;
+    cancelAnimationFrame(_marquee.raf);
+    _marquee.paused = false;
+    const seg = track.children[0];
+    if(!seg) return;
+    const segWidth = seg.offsetWidth;
+    function step() {
+        if(!_marquee.paused) {
+            _marquee.offset -= _marquee.speed;
+            if(Math.abs(_marquee.offset) >= segWidth) {
+                _marquee.offset += segWidth;
+            }
+            track.style.transform = `translateX(${_marquee.offset}px)`;
+        }
+        _marquee.raf = requestAnimationFrame(step);
+    }
+    // pause on hover
+    viewport.onmouseenter = () => { _marquee.paused = true; };
+    viewport.onmouseleave = () => { _marquee.paused = false; };
+    // small safety: if content shorter than viewport, don't scroll
+    if(segWidth <= viewport.offsetWidth) {
+        track.style.transform = 'translateX(0)';
+        return;
+    }
+    _marquee.raf = requestAnimationFrame(step);
+}
+
+function stopMarqueeLoop() { if(_marquee.raf) cancelAnimationFrame(_marquee.raf); _marquee.raf = null; }
 
 /* Weather widget: uses geolocation, falls back to IP-based location, and queries Open-Meteo (no API key) */
 function initWeather() {
@@ -208,6 +295,15 @@ initKB();
 render();
 initWeather();
 initQuote();
+// Initialize marquee after other inits so DOM and data are ready
+updateMarquee();
+
+// Rebuild marquee on resize to recalc segment widths
+window.addEventListener('resize', () => {
+    // debounce
+    clearTimeout(window._marqueeResizeTimer);
+    window._marqueeResizeTimer = setTimeout(() => updateMarquee(), 120);
+});
 
 function initQuote() {
     const qEl = document.getElementById('quote-text');

@@ -21,6 +21,46 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--dark); 
     transition: background-image 0.5s ease-in-out;
 }
 
+.month-banner { position: relative; }
+
+.weather {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(0,0,0,0.55); color: var(--text);
+    padding: 8px 12px; border-radius: 10px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px; font-size: 0.95rem;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+
+.weather { flex-direction: column; align-items: flex-end; max-width: 360px; }
+.weather-current { display:flex; align-items:center; gap:8px; font-size:1rem; padding:6px 10px; background: rgba(255,255,255,0.02); border-radius:8px; }
+.weather-weekly { display:flex; gap:6px; margin-top:8px; align-items:center; }
+.weather-day { background: rgba(255,255,255,0.03); padding:6px 8px; border-radius:8px; display:flex; flex-direction:column; align-items:center; min-width:46px; font-size:0.78rem; }
+.weather-day .day-name { font-weight:700; font-size:0.75rem; color:#dbeafe; }
+.weather-day .day-emoji { font-size:0.95rem; margin:4px 0; }
+.weather-day .day-temp { font-size:0.75rem; color:#93c5fd; }
+
+/* Quote of the day */
+.quote {
+    position: absolute;
+    left: 12px; right: 12px; bottom: 12px;
+    background: rgba(0,0,0,0.55); color: var(--text);
+    padding: 10px 12px; border-radius: 10px; display:flex;
+    align-items:center; justify-content:space-between; gap:12px;
+    border: 1px solid rgba(255,255,255,0.04); font-size:0.92rem;
+}
+.quote #quote-text { flex:1; color:#e6eef8; padding-right:8px; }
+.quote-refresh { background: rgba(255,255,255,0.03); border: none; color: var(--text); padding:6px 8px; border-radius:8px; cursor: pointer; font-size:1rem; }
+.quote-refresh:hover { background: rgba(255,255,255,0.06); }
+
+/* Quote bounce animation */
+.quote-animate { animation: quoteBounce 560ms cubic-bezier(.34,1.56,.64,1); }
+@keyframes quoteBounce {
+    0% { transform: translateY(20px) scale(0.95); opacity: 0; }
+    50% { transform: translateY(-10px) scale(1.05); opacity: 1; }
+    75% { transform: translateY(6px) scale(0.98); }
+ 100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
 .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #000; flex-wrap: wrap; gap: 10px; }
 .nav { display: flex; align-items: center; gap: 15px; }
 .header button, select { padding: 8px 12px; cursor: pointer; background: #1e293b; color: white; border: 1px solid var(--border); border-radius: 6px; font-weight: bold; }

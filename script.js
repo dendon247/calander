@@ -131,6 +131,146 @@ function importData(e) {
     reader.readAsText(e.target.files[0]);
 }
 
+/* Weather widget: uses geolocation, falls back to IP-based location, and queries Open-Meteo (no API key) */
+function initWeather() {
+    const el = document.getElementById('weather');
+    if(!el) return;
+    const cur = document.getElementById('weather-current');
+    if(cur) cur.innerText = 'Loading...';
+    if(navigator.geolocation) {
+        let geoTimer = setTimeout(() => { geoTimer = null; fetchIPLocation(); }, 4000);
+        navigator.geolocation.getCurrentPosition((p) => { if(geoTimer) { clearTimeout(geoTimer); geoTimer = null; } fetchWeather(p.coords.latitude, p.coords.longitude); }, (err) => { if(geoTimer) { clearTimeout(geoTimer); geoTimer = null; } fetchIPLocation(); }, {timeout:5000});
+    } else {
+        fetchIPLocation();
+    }
+
+    function fetchIPLocation() {
+        fetch('https://ipapi.co/json/')
+            .then(r => r.json())
+            .then(d => {
+                if(d && d.latitude && d.longitude) fetchWeather(d.latitude, d.longitude);
+                else if(cur) cur.innerText = 'Location unavailable';
+            }).catch(() => { if(cur) cur.innerText = 'Location unavailable'; });
+    }
+
+    function fetchWeather(lat, lon) {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&temperature_unit=fahrenheit&timezone=auto`;
+        fetch(url).then(r => r.json()).then(d => {
+            if(d && d.current_weather) {
+                const t = Math.round(d.current_weather.temperature);
+                const w = Math.round(d.current_weather.windspeed);
+                const code = d.current_weather.weathercode;
+                const cur = document.getElementById('weather-current');
+                const weekEl = document.getElementById('weather-weekly');
+                if(cur) cur.innerText = `${weatherEmoji(code)} ${t}°F • ${w} mph`;
+
+                // populate 7-day forecast
+                if(weekEl && d.daily && d.daily.time) {
+                    weekEl.innerHTML = '';
+                    const days = d.daily.time.slice(0,3);
+                    const tmax = d.daily.temperature_2m_max || [];
+                    const tmin = d.daily.temperature_2m_min || [];
+                    const wcodes = d.daily.weathercode || [];
+                    days.forEach((dt, i) => {
+                        const dayName = new Date(dt).toLocaleDateString(undefined, { weekday: 'short' });
+                        const emoji = weatherEmoji(wcodes[i]);
+                        const max = tmax[i] !== undefined ? Math.round(tmax[i]) : '--';
+                        const min = tmin[i] !== undefined ? Math.round(tmin[i]) : '--';
+                        const div = document.createElement('div');
+                        div.className = 'weather-day';
+                        div.innerHTML = `<div class="day-name">${dayName}</div><div class="day-emoji">${emoji}</div><div class="day-temp">${max}°/${min}°</div>`;
+                        weekEl.appendChild(div);
+                    });
+                }
+            } else {
+                const cur = document.getElementById('weather-current');
+                if(cur) cur.innerText = 'Weather N/A';
+            }
+        }).catch(() => {
+            const cur = document.getElementById('weather-current');
+            if(cur) cur.innerText = 'Weather unavailable';
+        });
+    }
+
+    function weatherEmoji(code) {
+        if(code === 0) return '☀️';
+        if(code >= 1 && code <= 3) return '🌤️';
+        if((code >= 45 && code <= 48) || (code >= 51 && code <= 57)) return '🌫️';
+        if((code >= 61 && code <= 67) || (code >= 80 && code <= 86)) return '🌧️';
+        if(code >= 71 && code <= 77) return '❄️';
+        if(code >= 95 && code <= 99) return '⛈️';
+        return '☁️';
+    }
+}
+
 document.getElementById('themePicker').value = theme;
 initKB();
 render();
+initWeather();
+initQuote();
+
+function initQuote() {
+    const qEl = document.getElementById('quote-text');
+    const btn = document.getElementById('refreshQuote');
+    if(!qEl) return;
+    const fallback = [
+        "I put my phone in airplane mode, but it's still on the couch.",
+        "I asked the calendar for a hint; it said 'date' night.",
+        "Why don't scientists trust atoms? They make up everything — especially excuses.",
+        "I'm on a whiskey diet. I've lost three days already.",
+        "If we shouldn't eat at night, why is there a light in the fridge?"
+    ];
+
+    const storageKey = 'quote_of_day';
+    const today = new Date().toISOString().slice(0,10);
+
+    function displayQuote(item) {
+        if(!item) return;
+        // animate text change
+        qEl.classList.remove('quote-animate');
+        // force reflow
+        void qEl.offsetWidth;
+        qEl.innerText = item.author ? `${item.content} — ${item.author}` : item.content;
+        qEl.classList.add('quote-animate');
+        // ensure class removed after animation so it can re-run
+        setTimeout(() => qEl.classList.remove('quote-animate'), 700);
+    }
+
+    function saveQuote(item) {
+        try { localStorage.setItem(storageKey, JSON.stringify(item)); } catch(e) { /* ignore */ }
+    }
+
+    function fetchQuote(force = false) {
+        // If not forcing, check storage first
+        if(!force) {
+            try {
+                const stored = JSON.parse(localStorage.getItem(storageKey) || 'null');
+                if(stored && stored.date === today) { displayQuote(stored); return; }
+            } catch(e) { /* ignore parse error */ }
+        }
+
+        qEl.innerText = 'Loading funny quote...';
+        fetch('https://api.quotable.io/random?tags=humor')
+            .then(r => r.json())
+            .then(d => {
+                if(d && d.content) {
+                    const item = { date: today, content: d.content, author: d.author };
+                    saveQuote(item);
+                    displayQuote(item);
+                } else {
+                    const text = fallback[Math.floor(Math.random()*fallback.length)];
+                    const item = { date: today, content: text };
+                    saveQuote(item);
+                    displayQuote(item);
+                }
+            }).catch(() => {
+                const text = fallback[Math.floor(Math.random()*fallback.length)];
+                const item = { date: today, content: text };
+                saveQuote(item);
+                displayQuote(item);
+            });
+    }
+
+    btn && btn.addEventListener('click', (e) => { e.stopPropagation(); fetchQuote(true); });
+    fetchQuote(false);
+}

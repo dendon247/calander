@@ -65,11 +65,14 @@
                 <div id="keyboard" class="kb-grid"></div>
                 
                 <div class="footer-row">
-                    <div class="color-picker-group">
-                        <label>Tag Color:</label>
-                        <input type="color" id="entryColor" value="#38bdf8">
-                    </div>
-                    <button class="btn-save" onclick="saveEntry()">SAVE ENTRY</button>
+                        <div class="color-picker-group">
+                            <label>Tag Color:</label>
+                            <input type="color" id="entryColor" value="#38bdf8">
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:center">
+                            <button class="btn-cancel" onclick="cancelEdit()" type="button">CANCEL</button>
+                            <button id="saveBtn" class="btn-save" onclick="saveEntry()">SAVE ENTRY</button>
+                        </div>
                 </div>
             </div>
         </div>

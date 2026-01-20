@@ -2,6 +2,7 @@ let viewDate = new Date();
 let db = JSON.parse(localStorage.getItem('calendar_v5_db')) || {};
 let theme = localStorage.getItem('cal_theme') || 'space';
 let activeKey = "";
+let editingIndex = -1;
 
 const imgSets = {
     space: ["https://images.unsplash.com/photo-1462331940025-496dfbfc7564","https://images.unsplash.com/photo-1446776811953-b23d57bd21aa","https://images.unsplash.com/photo-1614728894747-a83421e2b9c9","https://images.unsplash.com/photo-1454789548928-9efd52dc4031","https://images.unsplash.com/photo-1464802686167-b939a6910659","https://images.unsplash.com/photo-1614732414444-096e5f1122d5","https://images.unsplash.com/photo-1506318137071-a8e063b4b67d","https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3","https://images.unsplash.com/photo-1614313913007-2b4ae8ce32d6","https://images.unsplash.com/photo-1543722530-d2c3201371e7","https://images.unsplash.com/photo-1538370910416-06ad66473bb6","https://images.unsplash.com/photo-1502134249126-9f3755a50d78"],
@@ -83,9 +84,58 @@ function updateEntries() {
         db[activeKey].forEach((ev, idx) => {
             const row = document.createElement('div');
             row.style.cssText = `display:flex; justify-content:space-between; background:#000; padding:8px; margin-bottom:5px; border-left:4px solid ${ev.color}; border-radius:4px; font-size:0.9rem;`;
-            row.innerHTML = `<span>${ev.text}</span><button onclick="delEntry(${idx})" style="color:red; background:none; border:none; cursor:pointer;">X</button>`;
+            const left = document.createElement('span'); left.innerText = ev.text;
+            const controls = document.createElement('div');
+            controls.style.display = 'flex'; controls.style.gap = '8px';
+            const editBtn = document.createElement('button'); editBtn.innerText = 'Edit';
+            editBtn.style.cssText = 'background:none;border:1px solid #334155;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer;';
+            editBtn.onclick = (e) => { e.stopPropagation(); startEdit(idx); };
+            const delBtn = document.createElement('button'); delBtn.innerText = 'X';
+            delBtn.style.cssText = 'color:red; background:none; border:none; cursor:pointer; font-weight:900;';
+            delBtn.onclick = (e) => { e.stopPropagation(); delEntry(idx); };
+            controls.appendChild(editBtn); controls.appendChild(delBtn);
+            row.appendChild(left); row.appendChild(controls);
             list.appendChild(row);
         });
+    }
+}
+
+function startEdit(idx) {
+    if(!db[activeKey] || !db[activeKey][idx]) return;
+    editingIndex = idx;
+    const ev = db[activeKey][idx];
+    document.getElementById('entryInput').value = ev.text;
+    document.getElementById('entryColor').value = ev.color || '#38bdf8';
+    updateSaveButton();
+}
+
+function updateEntry() {
+    if(editingIndex < 0) return;
+    const txt = document.getElementById('entryInput').value.trim();
+    if(!txt) return cancelEdit();
+    db[activeKey][editingIndex] = { text: txt, color: document.getElementById('entryColor').value };
+    localStorage.setItem('calendar_v5_db', JSON.stringify(db));
+    editingIndex = -1;
+    document.getElementById('entryInput').value = '';
+    updateSaveButton();
+    render(); updateEntries(); updateMarquee();
+}
+
+function cancelEdit() {
+    editingIndex = -1;
+    document.getElementById('entryInput').value = '';
+    updateSaveButton();
+}
+
+function updateSaveButton() {
+    const btn = document.getElementById('saveBtn');
+    if(!btn) return;
+    if(editingIndex >= 0) {
+        btn.innerText = 'UPDATE';
+        btn.onclick = updateEntry;
+    } else {
+        btn.innerText = 'SAVE ENTRY';
+        btn.onclick = saveEntry;
     }
 }
 

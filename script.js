@@ -394,15 +394,30 @@ function initQuote() {
                 if(stored && stored.date === today) { displayQuote(stored); return; }
             } catch(e) { /* ignore parse error */ }
         }
-
         qEl.innerText = 'Loading funny quote...';
-        fetch('https://api.quotable.io/random?tags=humor')
+        // Try dad-joke API first, then Quotable humor, then local fallback
+        fetch('https://icanhazdadjoke.com/', { headers: { Accept: 'application/json' } })
             .then(r => r.json())
             .then(d => {
-                if(d && d.content) {
-                    const item = { date: today, content: d.content, author: d.author };
+                if(d && d.joke) {
+                    const item = { date: today, content: d.joke };
                     saveQuote(item);
                     displayQuote(item);
+                } else {
+                    return fetch('https://api.quotable.io/random?tags=humor');
+                }
+            })
+            .then(resp => {
+                if(!resp) return null;
+                return resp.json();
+            })
+            .then(d2 => {
+                if(d2 && d2.content) {
+                    const item = { date: today, content: d2.content, author: d2.author };
+                    saveQuote(item);
+                    displayQuote(item);
+                } else if(!d2) {
+                    // was handled by previous branch
                 } else {
                     const text = fallback[Math.floor(Math.random()*fallback.length)];
                     const item = { date: today, content: text };
